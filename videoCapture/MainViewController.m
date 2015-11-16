@@ -131,7 +131,7 @@
 }
 
 - (IBAction)cameraAction:(UIButton *)sender {
-    
+    //TODO: 前后
 }
 
 - (IBAction)settingAction:(UIButton *)sender {
