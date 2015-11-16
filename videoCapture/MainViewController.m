@@ -131,7 +131,7 @@
 }
 
 - (IBAction)cameraAction:(UIButton *)sender {
-    //TODO: 前后
+    //TODO: 前后摄像头切换
 }
 
 - (IBAction)settingAction:(UIButton *)sender {
