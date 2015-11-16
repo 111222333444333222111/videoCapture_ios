@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IP</key>
+	<string>61.152.231.61</string>
+	<key>Port</key>
+	<string>8090</string>
+	<key>Resolutions</key>
+	<array>
+		<string>320*240</string>
+		<string>480*320</string>
+		<string>640*480</string>
+		<string>1280*720</string>
+	</array>
+	<key>Resolution</key>
+	<integer>2</integer>
+	<key>Frame</key>
+	<string>15</string>
+	<key>Code</key>
+	<string>512</string>
+</dict>
+</plist>
