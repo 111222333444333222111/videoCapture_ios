@@ -11,6 +11,8 @@
 
 #import "ServiceManager.h"
 
+#import <KSYPushVideoStream/KSYPushVideoStream.h>
+
 @interface MainViewController () {
     NSString *name;
     NSString *pwd;
@@ -28,6 +30,8 @@
 - (IBAction)settingAction:(UIButton *)sender;
 
 @property AVCaptureDevice *device;
+
+@property KSYPushVideoStream *pushVideoStream;
 
 @end
 
@@ -51,6 +55,11 @@
     } else {
         [_flightBtn setImage:[UIImage imageNamed:@"ic_flash_off_holo_light"] forState:UIControlStateNormal];
     }
+    
+    _pushVideoStream = [[KSYPushVideoStream initialize] initWithDisplayView:self.view andCaptureDevicePosition:AVCaptureDevicePositionBack];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillResignActive:)name:UIApplicationWillResignActiveNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActiveNotification:)name:UIApplicationDidBecomeActiveNotification object:nil];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -70,7 +79,9 @@
         }];
     } else {
         //TODO: 关闭推流
-        
+        if ([_pushVideoStream isCapturing]) {
+            [_pushVideoStream stopRecord];
+        }
         
         [ServiceManager recordEndWithDevID:name DevKey:pwd callBack:^(BOOL isSuccess, id result, NSError *error) {
             if (isSuccess) {
@@ -94,7 +105,11 @@
             NSString *PublishUrl = res.PublishUrl;
             NSLog(@"PublishUrl = %@", PublishUrl);
             //TODO: 推流
-            
+            if (![_pushVideoStream isCapturing] && PublishUrl.length > 0) {
+//                [_pushVideoStream setUrl:@"rtmp://uplive.ksyun.com/live/czb123"];
+                [_pushVideoStream setUrl:PublishUrl];
+                [_pushVideoStream startRecord];
+            }
         } else
             kMBProgressHUD(self.view, @"开启视频失败");
     }
@@ -111,6 +126,16 @@
         } else
             kMBProgressHUD(self.view, @"停止视频失败");
     }
+}
+
+- (void)applicationWillResignActive:(NSNotification *)notification {
+    
+    [_pushVideoStream stopRecord];
+}
+
+- (void)applicationDidBecomeActiveNotification:(NSNotification *)notification {
+    [_pushVideoStream startRecord];
+    
 }
 
 - (IBAction)flightAction:(UIButton *)sender {
@@ -132,6 +157,7 @@
 
 - (IBAction)cameraAction:(UIButton *)sender {
     //TODO: 前后摄像头切换
+    [_pushVideoStream changCamerType];
 }
 
 - (IBAction)settingAction:(UIButton *)sender {

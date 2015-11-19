@@ -21,6 +21,7 @@
 		FA8821621BE85CF500DD081F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FA8821601BE85CF500DD081F /* Main.storyboard */; };
 		FA8821641BE85CF500DD081F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = FA8821631BE85CF500DD081F /* Assets.xcassets */; };
 		FA8821671BE85CF500DD081F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FA8821651BE85CF500DD081F /* LaunchScreen.storyboard */; };
+		FA9AE14E1BFD69FD007C0CDA /* libKSYPushVideoStream.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FA9AE14D1BFD69FD007C0CDA /* libKSYPushVideoStream.a */; };
 		FAA6F9AA1BF03B3900EA5515 /* videoCapture.plist in Resources */ = {isa = PBXBuildFile; fileRef = FAA6F9A91BF03B3900EA5515 /* videoCapture.plist */; };
 		FABF57991BF9AFC000873F5C /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FABF57981BF9AFC000873F5C /* AVFoundation.framework */; };
 /* End PBXBuildFile section */
@@ -54,6 +55,7 @@
 		FA8821631BE85CF500DD081F /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		FA8821661BE85CF500DD081F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		FA8821681BE85CF500DD081F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FA9AE14D1BFD69FD007C0CDA /* libKSYPushVideoStream.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libKSYPushVideoStream.a; path = "../../../../Library/Developer/Xcode/DerivedData/videoCapture-hjgghhqivynwcxfvmgjfsxvtdpue/Build/Products/Debug-iphoneos/libKSYPushVideoStream.a"; sourceTree = "<group>"; };
 		FAA6F9A91BF03B3900EA5515 /* videoCapture.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = videoCapture.plist; sourceTree = "<group>"; };
 		FABF57981BF9AFC000873F5C /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -63,6 +65,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA9AE14E1BFD69FD007C0CDA /* libKSYPushVideoStream.a in Frameworks */,
 				FABF57991BF9AFC000873F5C /* AVFoundation.framework in Frameworks */,
 				70E8B4F6854784DAA4699814 /* libPods.a in Frameworks */,
 			);
@@ -165,6 +168,7 @@
 		FD0FB8A3F9BBBA0128BFC331 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				FA9AE14D1BFD69FD007C0CDA /* libKSYPushVideoStream.a */,
 				FABF57981BF9AFC000873F5C /* AVFoundation.framework */,
 				191006279A1D9A8F47BDD169 /* libPods.a */,
 			);
@@ -413,7 +417,7 @@
 			baseConfigurationReference = 8B3CBDF066C3154D85F11B77 /* Pods.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ENABLE_BITCODE = YES;
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = videoCapture/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = cn.yeshine.videoCapture;
@@ -426,7 +430,7 @@
 			baseConfigurationReference = E19B8D38BC074AC6C6EBD1B1 /* Pods.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ENABLE_BITCODE = YES;
+				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = videoCapture/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = cn.yeshine.videoCapture;

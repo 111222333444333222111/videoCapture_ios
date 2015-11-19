@@ -2,6 +2,9 @@
 <Workspace
    version = "1.0">
    <FileRef
+      location = "group:KSYPushVideoStream/KSYPushVideoStream.xcodeproj">
+   </FileRef>
+   <FileRef
       location = "group:videoCapture.xcodeproj">
    </FileRef>
    <FileRef
