@@ -21,7 +21,7 @@ PODS:
     - AFNetworking/NSURLConnection
     - AFNetworking/NSURLSession
   - MBProgressHUD (0.9.1)
-  - YYModel (0.9.1)
+  - YYModel (0.9.3)
 
 DEPENDENCIES:
   - AFNetworking (~> 2.0)
@@ -31,6 +31,6 @@ DEPENDENCIES:
 SPEC CHECKSUMS:
   AFNetworking: cb8d14a848e831097108418f5d49217339d4eb60
   MBProgressHUD: c47f2c166c126cf2ce36498d80f33e754d4e93ad
-  YYModel: 659035a19b7839ddbfa761b4e9a721c689c11e29
+  YYModel: 2d6c7d3a952feb38db7491c0ef62c4dbcd85f029
 
 COCOAPODS: 0.39.0

@@ -10,9 +10,28 @@
 #import <UIKit/UIKit.h>
 #import <AVFoundation/AVFoundation.h>
 
-typedef void(^PushVideoStreamBlock)(double speed);
+
+typedef enum : NSUInteger {
+    PushStream_RTMP_OpenError = 0, //rtmp打开失败，检查URL
+    PushStream_Device_Denied  = 1,  //摄像头拒绝访问
+    PushStream_Device_Restricted = 2,//摄像头受限
+} PushStreamError;
+
+typedef void (^PushErrorBlock)(PushStreamError error);
 @interface KSYPushVideoStream : NSObject
 
+/**
+ *  主机名
+ */
+@property (nonatomic, copy)NSString *host;
+/**
+ *  流名
+ */
+@property (nonatomic, copy)NSString *streamName;
+/**
+ *  推流失败回调
+ */
+@property (nonatomic,copy)PushErrorBlock pushErrorBlock;
 //单例
 + (KSYPushVideoStream *)initialize;
 
@@ -24,7 +43,7 @@ typedef void(^PushVideoStreamBlock)(double speed);
  *
  *  @return 推流工具
  */
-- (instancetype)initWithDisplayView:(UIView *)displayView andCaptureDevicePosition:(AVCaptureDevicePosition)iCameraType;
+- (void)initWithDisplayView:(UIView *)displayView andCaptureDevicePosition:(AVCaptureDevicePosition)iCameraType;
 /**
  *  开始录制
  */

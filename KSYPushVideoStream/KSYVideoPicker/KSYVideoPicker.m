@@ -15,7 +15,6 @@ AVCaptureAudioDataOutputSampleBufferDelegate> {
     id deviceConnectedObserver;
     id deviceDisconnectedObserver;
     captureHandler sampleBufferHandler_;
-    KSYAVAssetEncoder *assetEncoder_;
     AVCaptureVideoPreviewLayer *layer_;
     UIView                      *backgroundView_;
 }
@@ -26,6 +25,7 @@ AVCaptureAudioDataOutputSampleBufferDelegate> {
 - (AVCaptureDevice *)audioDevice;
 - (void)startCapture:(KSYAVAssetEncoder *)encoder;
 
+@property (nonatomic, strong)KSYAVAssetEncoder *assetEncoder_;
 @end
 
 // Safe release
@@ -110,11 +110,14 @@ const char *kAudioBufferQueueLabel = "com.ifactorylab.KSYVideoPicker.audioqueue"
                                         object:nil
                                          queue:nil
                                     usingBlock:deviceDisconnectedBlock];
+        
+        
     }
     return self;
 }
 
 - (void)dealloc {
+    
     NSNotificationCenter *notificationCenter = [NSNotificationCenter defaultCenter];
     [notificationCenter removeObserver:deviceConnectedObserver];
     [notificationCenter removeObserver:deviceDisconnectedObserver];
@@ -122,7 +125,47 @@ const char *kAudioBufferQueueLabel = "com.ifactorylab.KSYVideoPicker.audioqueue"
     [self shutdown];
 }
 
+- (DeviceAuthorized)checkDevice
+{
+    
+    float version = [[[UIDevice currentDevice] systemVersion] floatValue]; //获取版本号
+    
+
+    if (version > 7.0 || version == 7.0) {
+        NSString *mediaType = AVMediaTypeVideo;
+        AVAuthorizationStatus authStatus = [AVCaptureDevice authorizationStatusForMediaType:mediaType];
+        
+        if(authStatus ==AVAuthorizationStatusRestricted){
+            
+            return Restricted;
+            
+        }
+        
+        else if(authStatus == AVAuthorizationStatusDenied){
+            
+            
+            return Denied;
+        }else {
+            return Authorized;
+
+        }
+
+
+    }
+    
+    return 10;
+    
+
+}
 - (BOOL)startup {
+    
+    DeviceAuthorized checkDevice = [self checkDevice];
+    if (checkDevice != Authorized) {
+        if (self.checkDeviceBlock) {
+            self.checkDeviceBlock(checkDevice);
+        }
+        return NO;
+    }
     if (session != nil) {
         // If session already exists, return NO.
         NSLog(@"Video session already exists, you must call shutdown current session first");
@@ -137,8 +180,12 @@ const char *kAudioBufferQueueLabel = "com.ifactorylab.KSYVideoPicker.audioqueue"
     
     
     // Init the device inputs
+    NSError *error;
     AVCaptureDeviceInput *newVideoInput =
-    [[AVCaptureDeviceInput alloc] initWithDevice:backFacingCaemra error:nil];
+    [[AVCaptureDeviceInput alloc] initWithDevice:backFacingCaemra error:&error];
+    if (newVideoInput == nil) {
+        NSLog(@"error is %@",error);
+    }
     AVCaptureDeviceInput *newAudioInput =
     [[AVCaptureDeviceInput alloc] initWithDevice:[self audioDevice] error:nil];
     
@@ -168,7 +215,7 @@ const char *kAudioBufferQueueLabel = "com.ifactorylab.KSYVideoPicker.audioqueue"
         newSession.sessionPreset = AVCaptureSessionPreset1920x1080;
 
     }else{
-        newSession.sessionPreset = AVCaptureSessionPreset1280x720;
+        newSession.sessionPreset = AVCaptureSessionPreset640x480;
 
     }
     
@@ -285,6 +332,8 @@ const char *kAudioBufferQueueLabel = "com.ifactorylab.KSYVideoPicker.audioqueue"
             [newCaptureVideoPreviewLayer setOrientation:orientation];
         }
     }
+
+    
     
     [newCaptureVideoPreviewLayer setVideoGravity:AVLayerVideoGravityResizeAspectFill];
     [viewLayer insertSublayer:newCaptureVideoPreviewLayer below:[[viewLayer sublayers] objectAtIndex:0]];
@@ -381,8 +430,7 @@ const char *kAudioBufferQueueLabel = "com.ifactorylab.KSYVideoPicker.audioqueue"
     [session stopRunning];
 }
 
-// Find a camera with the specificed AVCaptureDevicePosition, returning nil if
-// one is not found
+
 - (AVCaptureDevice *) cameraWithPosition:(AVCaptureDevicePosition) position {
     NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
     for (AVCaptureDevice *device in devices) {
@@ -393,17 +441,15 @@ const char *kAudioBufferQueueLabel = "com.ifactorylab.KSYVideoPicker.audioqueue"
     return nil;
 }
 
-// Find a front facing camera, returning nil if one is not found
 - (AVCaptureDevice *)frontFacingCamera {
     return [self cameraWithPosition:AVCaptureDevicePositionFront];
 }
 
-// Find a back facing camera, returning nil if one is not found
 - (AVCaptureDevice *) backFacingCamera {
     return [self cameraWithPosition:AVCaptureDevicePositionBack];
 }
 
-// Find and return an audio device, returning nil if one is not found
+
 - (AVCaptureDevice *)audioDevice {
     NSArray *devices = [AVCaptureDevice devicesWithMediaType:AVMediaTypeAudio];
     if ([devices count] > 0) {
@@ -412,8 +458,6 @@ const char *kAudioBufferQueueLabel = "com.ifactorylab.KSYVideoPicker.audioqueue"
     return nil;
 }
 
-// Add video and audio output objects to the current session to capture video
-// and audio stream from the session.
 - (void)startCapture:(KSYAVAssetEncoder *)encoder {
     [encoder start];
     
@@ -423,9 +467,9 @@ const char *kAudioBufferQueueLabel = "com.ifactorylab.KSYVideoPicker.audioqueue"
         
         for (AVCaptureConnection *c in videoBufferOutput.connections) {
             NSLog(@"Video stablization supported: %@", c.isVideoStabilizationSupported ? @"TRUE" : @"FALSE");
-            NSLog(@"Video stablization enabled: %@", c.videoStabilizationEnabled ? @"TRUE" : @"FALSE");
+            NSLog(@"Video stablization enabled: %@", c.activeVideoStabilizationMode ? @"TRUE" : @"FALSE");
             if (c.isVideoStabilizationSupported) {
-                c.enablesVideoStabilizationWhenAvailable = YES;
+                c.preferredVideoStabilizationMode = YES;
             }
         }
     }
@@ -434,7 +478,6 @@ const char *kAudioBufferQueueLabel = "com.ifactorylab.KSYVideoPicker.audioqueue"
         [session addOutput:audioBufferOutput];
     }
     
-    // Now, we are capturing
     [self setIsCapturing:YES];
 }
 
@@ -443,25 +486,22 @@ const char *kAudioBufferQueueLabel = "com.ifactorylab.KSYVideoPicker.audioqueue"
                    captureBlock:(encodedCaptureHandler)captureBlock
                 metaHeaderBlock:(encodingMetaHeaderHandler)metaHeaderBlock
                    failureBlock:(encodingFailureHandler)failureBlock {
-    // In order to use hardware acceleration encoding, we need to use
-    // AVAssetsWriter, and AVAssetsWriter only writes to file, so we need to
-    // create a file to contain encoded buffer and notify to captureBlock when
-    // change is detcted.
-    if (assetEncoder_ == nil) {
-        assetEncoder_ = [KSYAVAssetEncoder mpeg4BaseEncoder];
-        assetEncoder_.videoEncoder = video;
-        assetEncoder_.audioEncoder = audio;
-        assetEncoder_.captureHandler = captureBlock;
-        assetEncoder_.failureHandler = failureBlock;
-        assetEncoder_.metaHeaderHandler = metaHeaderBlock;
+
+    if (self.assetEncoder_ == nil) {
+        self.assetEncoder_ = [KSYAVAssetEncoder mpeg4BaseEncoder];
+        self.assetEncoder_.videoEncoder = video;
+        self.assetEncoder_.audioEncoder = audio;
+        self.assetEncoder_.captureHandler = captureBlock;
+        self.assetEncoder_.failureHandler = failureBlock;
+        self.assetEncoder_.metaHeaderHandler = metaHeaderBlock;
     }
     
-    [self startCapture:assetEncoder_];
+    [self startCapture:self.assetEncoder_];
 }
 
 - (void)startCaptureTest
 {
-    [self startCapture:assetEncoder_];
+    [self startCapture:self.assetEncoder_];
 
 }
 - (void)stopCapture {
@@ -470,9 +510,9 @@ const char *kAudioBufferQueueLabel = "com.ifactorylab.KSYVideoPicker.audioqueue"
     }
     
     // Clean up encoder objects which might have been set eariler.
-    if (assetEncoder_ != nil) {
-        [assetEncoder_ stop];
-        assetEncoder_ = nil;
+    if (self.assetEncoder_ != nil) {
+        [self.assetEncoder_ stop];
+        self.assetEncoder_ = nil;
     }
     // Pull out video and audio output from current capture session.
     [session removeOutput:videoBufferOutput];
@@ -506,7 +546,7 @@ const char *kAudioBufferQueueLabel = "com.ifactorylab.KSYVideoPicker.audioqueue"
             if (position == AVCaptureDevicePositionFront)
             {
                 newCamera = [self cameraWithPosition:AVCaptureDevicePositionBack];
-                self.session.sessionPreset = AVCaptureSessionPreset1920x1080;
+                self.session.sessionPreset = AVCaptureSessionPreset1280x720;
 
             }
 
@@ -538,8 +578,7 @@ const char *kAudioBufferQueueLabel = "com.ifactorylab.KSYVideoPicker.audioqueue"
 - (void) captureOutput:(AVCaptureOutput *)captureOutput
  didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
         fromConnection:(AVCaptureConnection *)connection {
-    
-    NSLog(@"回调!!!!!!!");
+
     IFCapturedBufferType bufferType = kBufferUnknown;
     if (connection == [videoBufferOutput connectionWithMediaType:AVMediaTypeVideo]) {
         bufferType = kBufferVideo;
@@ -547,8 +586,8 @@ const char *kAudioBufferQueueLabel = "com.ifactorylab.KSYVideoPicker.audioqueue"
         bufferType = kBufferAudio;
     }
     
-    if (assetEncoder_ != nil) {
-        [assetEncoder_ encodeSampleBuffer:sampleBuffer ofType:bufferType];
+    if (self.assetEncoder_ != nil) {
+        [self.assetEncoder_ encodeSampleBuffer:sampleBuffer ofType:bufferType];
     } else {
         if (sampleBufferHandler_ != nil) {
             sampleBufferHandler_(sampleBuffer, bufferType);

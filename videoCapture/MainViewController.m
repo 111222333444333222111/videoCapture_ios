@@ -13,6 +13,8 @@
 
 #import <KSYPushVideoStream/KSYPushVideoStream.h>
 
+#define RTMP_HOST @"rtmp://183.131.21.161/live?vhost=test.uplive.ksyun.com/"
+
 @interface MainViewController () {
     NSString *name;
     NSString *pwd;
@@ -56,7 +58,19 @@
         [_flightBtn setImage:[UIImage imageNamed:@"ic_flash_off_holo_light"] forState:UIControlStateNormal];
     }
     
-    _pushVideoStream = [[KSYPushVideoStream initialize] initWithDisplayView:self.view andCaptureDevicePosition:AVCaptureDevicePositionBack];
+    __weak typeof(self) weakSelf = self;
+    _pushVideoStream = [KSYPushVideoStream initialize];
+    _pushVideoStream.pushErrorBlock = ^(PushStreamError error){
+        if (error == PushStream_RTMP_OpenError) {
+            UIAlertView *alertV = [[UIAlertView alloc] initWithTitle:nil message:@"RTMP打开失败" delegate:weakSelf cancelButtonTitle:nil otherButtonTitles:@"知道了", nil];
+            [alertV show];
+        }else if (error == PushStream_Device_Denied || error == PushStream_Device_Restricted){
+            UIAlertView *alertV = [[UIAlertView alloc] initWithTitle:nil message:@"摄像头访问受限，请在设置隐私中打开" delegate:weakSelf cancelButtonTitle:nil otherButtonTitles:@"知道了", nil];
+            [alertV show];
+            
+        }
+    };
+    [_pushVideoStream initWithDisplayView:self.view andCaptureDevicePosition:AVCaptureDevicePositionBack];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationWillResignActive:)name:UIApplicationWillResignActiveNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(applicationDidBecomeActiveNotification:)name:UIApplicationDidBecomeActiveNotification object:nil];
@@ -106,7 +120,10 @@
             NSLog(@"PublishUrl = %@", PublishUrl);
             //TODO: 推流
             if (![_pushVideoStream isCapturing] && PublishUrl.length > 0) {
-//                [_pushVideoStream setUrl:@"rtmp://uplive.ksyun.com/live/czb123"];
+                _pushVideoStream.host = RTMP_HOST;
+                _pushVideoStream.streamName = @"cuizhibo";
+                
+//                [_pushVideoStream setUrl:@"rtmp://test.uplive.ksyun.com/live/test_iOS_123"];
                 [_pushVideoStream setUrl:PublishUrl];
                 [_pushVideoStream startRecord];
             }

@@ -19,6 +19,12 @@
 #import "KSYVideoEncoder.h"
 #import "KSYMP4Frame.h"
 
+
+typedef enum : NSUInteger {
+    Authorized = 0, //授权
+    Denied = 1,     //拒绝
+    Restricted,     //受限
+} DeviceAuthorized;
 typedef void (^captureHandler)(CMSampleBufferRef sampleBuffer, IFCapturedBufferType type);
 
 @interface KSYVideoPicker : NSObject {
@@ -34,7 +40,7 @@ typedef void (^captureHandler)(CMSampleBufferRef sampleBuffer, IFCapturedBufferT
 @property (nonatomic, retain) UIView *videoPreviewView;
 @property (nonatomic, assign) AVCaptureDevicePosition devicePosition;
 @property (nonatomic, assign, getter = getEncoderState) BOOL isCapturing;
-
+@property (nonatomic, copy)   void (^checkDeviceBlock) (DeviceAuthorized deviceLimits);
 - (BOOL)startup;
 
 - (void)shutdown;
